@@ -1,0 +1,8 @@
+.claude/
+tools/
+linkedin-banner.png
+*.step
+*.STEP
+__pycache__/
+.DS_Store
+Thumbs.db

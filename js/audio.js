@@ -25,6 +25,8 @@ export class Sound {
   constructor() {
     this.musicVol = read('vol-music', 0.5);
     this.sfxVol = read('vol-sfx', 0.6);
+    this.musicMuted = read('mute-music', 0) === 1;
+    this.sfxMuted = read('mute-sfx', 0) === 1;
     this.ctx = null;
     this.step = 0;          // where the carousel "melody" currently sits in the scale
   }
@@ -52,14 +54,14 @@ export class Sound {
     const wet = ctx.createGain(); wet.gain.value = 0.55;
     this.reverb.connect(wet).connect(out);
 
-    this.sfxBus = ctx.createGain(); this.sfxBus.gain.value = this.sfxVol;
+    this.sfxBus = ctx.createGain(); this.sfxBus.gain.value = this.sfxMuted ? 0 : this.sfxVol;
     this.sfxBus.connect(out);
     this.sfxSend = ctx.createGain(); this.sfxSend.gain.value = 0.5;
     this.sfxBus.connect(this.sfxSend).connect(this.reverb);
 
     this.musicBus = ctx.createGain(); this.musicBus.gain.value = 0;
     this.musicBus.connect(out);
-    this.musicBus.gain.setTargetAtTime(this.musicVol, ctx.currentTime, 2.5);     // fade in
+    this.musicBus.gain.setTargetAtTime(this.musicMuted ? 0 : this.musicVol, ctx.currentTime, 2.5);     // fade in
 
     if (MUSIC_FILE) this.#startFile(); else this.#startHum();
 
@@ -68,14 +70,18 @@ export class Sound {
     });
   }
 
-  setMusic(v) {
-    this.musicVol = v; write('vol-music', v);
-    if (this.ctx) this.musicBus.gain.setTargetAtTime(v, this.ctx.currentTime, 0.08);
+  // moving a slider also un-mutes that channel
+  setMusic(v) { this.musicVol = v; write('vol-music', v); this.muteMusic(false); }
+  setSfx(v) { this.sfxVol = v; write('vol-sfx', v); this.muteSfx(false); }
+
+  muteMusic(on) {
+    this.musicMuted = on; write('mute-music', on ? 1 : 0);
+    if (this.ctx) this.musicBus.gain.setTargetAtTime(on ? 0 : this.musicVol, this.ctx.currentTime, 0.08);
   }
 
-  setSfx(v) {
-    this.sfxVol = v; write('vol-sfx', v);
-    if (this.ctx) this.sfxBus.gain.setTargetAtTime(v, this.ctx.currentTime, 0.03);
+  muteSfx(on) {
+    this.sfxMuted = on; write('mute-sfx', on ? 1 : 0);
+    if (this.ctx) this.sfxBus.gain.setTargetAtTime(on ? 0 : this.sfxVol, this.ctx.currentTime, 0.03);
   }
 
   /* ── background ─────────────────────────────────────────── */

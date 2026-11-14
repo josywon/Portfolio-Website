@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { projects } from './projects.js';
+import { projects, contact } from './projects.js';
 import { buildModel, loadGlb, createMaterials } from './models.js';
 import { Harmonograph } from './harmonograph.js';
 import { makeCloudTile, makeGrain, makeEnvCanvas } from './sky.js';
@@ -32,7 +32,6 @@ const mod = (a, m) => ((a % m) + m) % m;
 const lerp = (a, b, t) => a + (b - a) * t;
 const damp = (a, b, k, dt) => lerp(a, b, 1 - Math.exp(-k * dt));
 const ease = (t) => t * t * (3 - 2 * t);
-const pad = (v, l = 2) => String(v).padStart(l, '0');
 const h = (tag, text, cls) => {
   const e = document.createElement(tag);
   if (cls) e.className = cls;
@@ -88,14 +87,14 @@ const items = projects.map((p, i) => {
       .then((part) => { part.scale.setScalar(p.scale || 1); obj.add(part); })
       .catch((err) => { console.error(`Could not load ${p.glb}`, err); obj.add(buildModel(p.model, M)); });
   } else {
-    obj.add(buildModel(p.model, M));
+    obj.add(buildModel(p.model, M, { logo: p.logo }));
   }
   return { obj, spin: p.sway ? 0 : i * 0.9, yaw: 0, pitch: 0, w: 0, sx: 0, sy: 0, sr: 0, depth: 0, focus: 0 };
 });
 
-let floor;
+let floor, floorMat;
 { // orbit rings + slot ticks on the "floor"
-  const mat = new THREE.LineBasicMaterial({ color: 0x0b2a6b, transparent: true, opacity: 0.3 });
+  const mat = (floorMat = new THREE.LineBasicMaterial({ color: 0x0b2a6b, transparent: true, opacity: 0.3 }));
   floor = new THREE.Group();
   floor.position.set(0, -1.3, -R);
   floor.rotation.x = Math.PI / 2;
@@ -155,7 +154,12 @@ function fillDetail(i) {
   const rows = p.rows || [['date', p.date], ['role', p.role], ['status', p.status]];
   el.dMeta.replaceChildren(...rows.map(([k, v]) => {
     const d = h('div'), dd = h('dd');
-    if (v && v.href) {                       // a row can be a link: { label, href }
+    if (v && v.action === 'contact') {       // a row can open the contact pop-up
+      const b = h('button', v.label, 'rowlink');
+      b.type = 'button';
+      b.addEventListener('click', openContact);
+      dd.append(b);
+    } else if (v && v.href) {                // …or be a link: { label, href }
       const a = h('a', v.label);
       a.href = v.href; a.target = '_blank'; a.rel = 'noopener';
       dd.append(a);
@@ -175,13 +179,40 @@ function fillDetail(i) {
     return ul;
   }));
 
-  el.dToolsSection.hidden = !(p.tools && p.tools.length);
+  // chips: a flat list, or groups that each start with a label
+  const groups = p.toolGroups || (p.tools && p.tools.length ? [[null, p.tools]] : []);
+  el.dToolsSection.hidden = !groups.length;
   el.dToolsTitle.textContent = p.toolsTitle || 'tools';
-  el.dTools.replaceChildren(...(p.tools || []).map((t) => h('li', t)));
+  el.dTools.replaceChildren(...groups.flatMap(([label, chips]) => [
+    ...(label ? [h('li', label, 'group')] : []),
+    ...chips.map((t) => h('li', t)),
+  ]));
+
+  // extra bulleted sections (awards, leadership, …)
+  $('#d-extra').replaceChildren(...(p.sections || []).map(([title, items]) => {
+    // résumé-style entries: name + date on one line, organisation in italics, then the detail
+    const sec = h('section'), ul = h('ul', null, 'entries');
+    ul.append(...items.map((it) => {
+      const li = h('li'), head = h('div', null, 'head');
+      head.append(h('strong', it.title), h('span', it.date, 'date'));
+      li.append(head);
+      if (it.org) li.append(h('em', it.org));
+      if (it.text) li.append(h('p', it.text));
+      return li;
+    }));
+    sec.append(h('h3', title), ul);
+    return sec;
+  }));
 
   el.dLinksSection.hidden = !(p.links && p.links.length);
   el.dLinksTitle.textContent = p.linksTitle || 'links';
   el.dLinks.replaceChildren(...(p.links || []).map((l) => {
+    if (l.action === 'contact') {
+      const b = h('button', l.label, 'pill');
+      b.type = 'button';
+      b.addEventListener('click', openContact);
+      return b;
+    }
     const a = h('a', l.label, 'pill');
     a.href = l.href;
     if (!l.href.startsWith('mailto:')) { a.target = '_blank'; a.rel = 'noopener'; }
@@ -207,6 +238,25 @@ function fillDetail(i) {
   }
   el.dScroll.scrollTop = 0;
 }
+
+// contact pop-up: addresses are joined here, at the moment of opening
+function openContact() {
+  $('#contact-list').replaceChildren(...contact.map((c) => {
+    const row = h('div'), dd = h('dd');
+    const text = c.user ? `${c.user}@${c.domain}` : c.text;
+    const a = h('a', text);
+    a.href = c.user ? `mailto:${text}` : c.href;
+    if (!c.user) { a.target = '_blank'; a.rel = 'noopener'; }
+    dd.append(a);
+    row.append(h('dt', c.label), dd);
+    return row;
+  }));
+  $('#contact').showModal();
+  sound.open();
+}
+$('#btn-mail').addEventListener('click', openContact);
+$('#contact').addEventListener('click', (e) => { if (e.target === $('#contact')) $('#contact').close(); });
+$('#contact').addEventListener('close', () => sound.back());
 
 function openLightbox(img) {
   const isVideo = img.type === 'video';
@@ -274,7 +324,7 @@ function pick(x, y) {
 /* ── input ──────────────────────────────────────────────── */
 let wheelAcc = 0, wheelReset;
 addEventListener('wheel', (e) => {
-  if (state.detail || el.lightbox.open) return;         // let the panel scroll
+  if (state.detail || document.querySelector('dialog[open]')) return;         // let the panel scroll
   e.preventDefault();
   let d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
   if (e.deltaMode === 1) d *= 33;
@@ -317,10 +367,11 @@ function endDrag(e) {
     if (!state.detail) { state.target = Math.round(state.target); syncIndex(); }
     return;
   }
-  if (state.detail) return;
+  if (intro.t < 1) return;
+  if (state.detail) { closeDetail(); return; }          // a tap anywhere off the panel goes back
   const hit = pick(e.clientX, e.clientY);
-  if (hit < 0) return;
-  if (hit === currentIndex()) { openDetail(); return; }
+  // a tap on a side part spins it to the front; a tap anywhere else opens the centre one
+  if (hit < 0 || hit === currentIndex()) { openDetail(); return; }
   const rel = mod(hit - state.target + n / 2, n) - n / 2;   // spin the clicked part to the front
   state.target = Math.round(state.target + rel);
   sound.move(Math.sign(rel));
@@ -331,7 +382,7 @@ canvas.addEventListener('pointercancel', () => { state.drag = null; state.target
 canvas.addEventListener('pointerleave', () => { pointer.inside = false; });
 
 addEventListener('keydown', (e) => {
-  if (el.lightbox.open) return;
+  if (document.querySelector('dialog[open]')) return;
   if (e.key === 'Escape') { closeDetail(); return; }
   if (e.key === 'ArrowRight') { step(1); e.preventDefault(); }
   else if (e.key === 'ArrowLeft') { step(-1); e.preventDefault(); }
@@ -353,21 +404,62 @@ for (const type of ['pointerdown', 'keydown', 'touchend']) addEventListener(type
 for (const b of document.querySelectorAll('.arrow, .orb, .pill')) {
   b.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') sound.hover(); });
 }
-for (const b of document.querySelectorAll('.orb')) b.addEventListener('click', () => sound.click());
+for (const b of document.querySelectorAll('a.orb')) b.addEventListener('click', () => sound.click());
 el.dLinks.addEventListener('click', (e) => { if (e.target.closest('a')) sound.click(); });
 el.lightbox.addEventListener('close', () => sound.back());
 
-for (const [id, get, set] of [['#vol-music', () => sound.musicVol, (v) => sound.setMusic(v)], ['#vol-sfx', () => sound.sfxVol, (v) => sound.setSfx(v)]]) {
-  const input = $(id);
-  const paint = () => input.style.setProperty('--fill', `${input.value * 100}%`);
-  input.value = get(); paint();
+const channels = [
+  { key: 'music', vol: () => sound.musicVol, muted: () => sound.musicMuted, set: (v) => sound.setMusic(v), mute: (on) => sound.muteMusic(on) },
+  { key: 'sfx', vol: () => sound.sfxVol, muted: () => sound.sfxMuted, set: (v) => sound.setSfx(v), mute: (on) => sound.muteSfx(on) },
+];
+for (const ch of channels) {
+  const input = $(`#vol-${ch.key}`), btn = $(`#mute-${ch.key}`), row = $(`#row-${ch.key}`);
+  const paint = () => {
+    input.style.setProperty('--fill', `${input.value * 100}%`);
+    row.classList.toggle('is-muted', ch.muted());
+    btn.setAttribute('aria-pressed', String(ch.muted()));
+  };
+  input.value = ch.vol(); paint();
   let lastTick = 0;
   input.addEventListener('input', () => {
-    set(+input.value); paint();
+    ch.set(+input.value); paint();
     const now = performance.now();
-    if (id === '#vol-sfx' && now - lastTick > 70) { lastTick = now; sound.tick(); }
+    if (ch.key === 'sfx' && now - lastTick > 70) { lastTick = now; sound.tick(); }
+  });
+  btn.addEventListener('click', () => {            // the icon toggles mute
+    ch.mute(!ch.muted()); paint();
+    sound.click();
   });
 }
+
+/* ── theme ──────────────────────────────────────────────── */
+const themeBtn = $('#btn-theme');
+let dark = document.documentElement.dataset.theme === 'dark';
+
+function applyTheme() {
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  themeBtn.setAttribute('aria-pressed', String(dark));
+  themeBtn.setAttribute('aria-label', dark ? 'Light mode' : 'Dark mode');
+  document.querySelector('meta[name="theme-color"]').content = dark ? '#060a13' : '#f2f4f7';
+  scene.fog.color.set(dark ? 0x060a13 : 0xf2f4f7);
+  M.edge.color.set(dark ? 0x9cc4ff : 0x0b2a6b);
+  floorMat.color.set(dark ? 0x8fb4ee : 0x0b2a6b);
+  harmo.setTheme(dark);
+  try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch { /* private mode */ }
+}
+if (dark) applyTheme();
+
+themeBtn.addEventListener('click', () => {
+  dark = !dark;
+  sound.click();
+  // the new theme opens as a circle growing out of the button
+  const r = themeBtn.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+  rootStyle.setProperty('--px', `${x}px`);
+  rootStyle.setProperty('--py', `${y}px`);
+  rootStyle.setProperty('--pr', `${Math.ceil(Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y)))}px`);
+  if (!document.startViewTransition || reduceMotion) { applyTheme(); return; }
+  document.startViewTransition(() => { applyTheme(); renderer.render(scene, camera); });
+});
 
 /* ── launch animation ───────────────────────────────────── */
 // ring whirls, parts spin fast, camera pulls back — all easing out together
@@ -531,7 +623,7 @@ function frame(nowMs) {
     if (hover && !noHover) sound.hover();
     document.body.classList.toggle('is-hover', hover);
   }
-  canvas.style.cursor = state.detail ? (state.drag ? 'grabbing' : 'grab') : hit >= 0 ? 'pointer' : 'default';
+  canvas.style.cursor = state.detail ? (state.drag && state.drag.moved ? 'grabbing' : 'grab') : intro.t >= 1 ? 'pointer' : 'default';
 
   // background
   harmo.group.rotation.set(0.22 + Math.sin(clock * 0.07) * 0.12 + pointer.sy * 0.04, Math.sin(clock * 0.05) * 0.4 + pointer.sx * 0.08, -0.36);

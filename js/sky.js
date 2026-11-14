@@ -1,6 +1,6 @@
 // Procedural sky textures — no image assets.
-// One tileable noise function feeds the CSS cloud panels, the dithered
-// "bitmap" panel, the paper grain, and the reflection map for the chrome parts.
+// One tileable noise function feeds the CSS cloud panels and the reflection
+// map for the chrome parts; the paper grain is plain random noise.
 
 const lerp = (a, b, t) => a + (b - a) * t;
 const sstep = (a, b, x) => {
@@ -56,25 +56,6 @@ export function makeCloudTile(w = 512, h = 256, seed = 11) {
       d[i + 1] = lerp(231, 255, core);
       d[i + 2] = lerp(252, 255, core);
       d[i + 3] = body * 245;
-    }
-  }
-  ctx.putImageData(img, 0, 0);
-  return c;
-}
-
-/** Two-tone ordered-dither clouds for the pixelated panel. */
-export function makeDitherTile(size = 192, seed = 29) {
-  const bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-  const c = canvasOf(size, size), ctx = c.getContext('2d');
-  const img = ctx.createImageData(size, size), d = img.data;
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const n = fbm(x / size, y / size, seed, 3, 4);
-      const val = sstep(0.36, 0.74, n);
-      const on = val > (bayer[(y & 3) * 4 + (x & 3)] + 0.5) / 16;
-      const i = (y * size + x) * 4;
-      d[i] = d[i + 1] = d[i + 2] = 255;
-      d[i + 3] = on ? 255 : 0;
     }
   }
   ctx.putImageData(img, 0, 0);

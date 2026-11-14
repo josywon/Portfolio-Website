@@ -7,16 +7,29 @@
 //   scale      size multiplier for a glb part (default 1)
 //   modelNote  small text shown under the model on the project page
 //   rows       the table under the title: [label, value] pairs;
-//              a value can be a link: { label, href }
+//              a value can be a link: { label, href }, or { label, action: 'contact' }
+//              to open the contact pop-up
 //   overview   paragraphs; an array inside the list becomes a bulleted list
-//   tools      chips under the overview (leave empty to hide the section)
-//   links      buttons under the tools: { label, href }
+//   tools      chips under the overview (leave empty to hide the section);
+//              or toolGroups: [[group name, [chips…]], …] for grouped chips
+//   sections   extra résumé-style sections: [[title, [{ title, org, date, text }, …]], …]
+//   links      buttons: { label, href }, or { label, action: 'contact' } to open the contact pop-up
 //   gallery    { src, thumb, alt, caption } — click to enlarge; `caption` is the
 //              description shown under the enlarged image. Add type: 'video'
 //              for a video (src is the .mp4, thumb its cover frame).
 //              Use null to hide the gallery section.
 
 const github = (repo) => ({ label: repo, href: `https://github.com/${repo}` });
+
+// Contact details shown in the pop-up (dock mail button and the About Me page).
+// Email addresses are stored in two halves and only joined when the pop-up
+// opens, so they never appear as plain text for scrapers to harvest.
+export const contact = [
+  { label: 'email', user: 'josephwon119', domain: 'gmail.com' },
+  { label: 'school email', user: 'joseph.won', domain: 'uwaterloo.ca' },
+  { label: 'linkedin', text: 'linkedin.com/in/josephwon119', href: 'https://www.linkedin.com/in/josephwon119/' },
+  { label: 'github', text: 'github.com/josywon', href: 'https://github.com/josywon?tab=repositories' },
+];
 
 const about = {
   name: 'About Me',
@@ -25,17 +38,51 @@ const about = {
   blurb: 'A mechanical engineering student passionate about aerospace and automotives :)',
   rows: [
     ['based in', 'Vancouver, Canada'],
-    ['studying', 'Mechanical Engineering, University of Waterloo'],
+    ['studying', 'BASc Mechanical Engineering, Honours Co-op — University of Waterloo (2026 – 2031)'],
     ['status', 'Open to opportunities'],
+    ['contact', { label: 'View contact info', action: 'contact' }],
   ],
   overview: [],
-  tools: [],
-  linksTitle: 'contact',
-  links: [
-    { label: 'josephwon119@gmail.com', href: 'mailto:josephwon119@gmail.com' },
-    { label: 'joseph.won@uwaterloo.ca', href: 'mailto:joseph.won@uwaterloo.ca' },
-    { label: 'LinkedIn', href: 'https://www.linkedin.com/in/josephwon119/' },
-    { label: 'GitHub', href: 'https://github.com/josywon?tab=repositories' },
+  toolsTitle: 'skills',
+  toolGroups: [
+    ['CAD, simulation & design', ['AutoCAD', 'SolidWorks', 'Fusion 360', 'Ansys', 'GD&T']],
+    ['Programming & embedded', ['Python', 'ESP32', 'Arduino IDE', 'Git', 'GitHub', 'KiCad']],
+    ['Manufacturing', ['CNC Machining', '3D Printing', 'Laser Cutting', 'Metalworking', 'Woodworking']],
+  ],
+  sections: [
+    ['awards', [
+      {
+        title: 'First Place, Brock Solutions Airport Innovation Challenge',
+        org: 'Brock Solutions',
+        date: 'Nov 2026',
+        text: 'Designed a Bluetooth Low Energy bag tracker that uses trilateration, with a working ESP32 prototype.',
+      },
+      {
+        title: 'Cadet Medal of Excellence',
+        org: 'The Royal Canadian Legion',
+        date: 'Jun 2026',
+        text: 'Awarded to one cadet per year, recognized for a strong commitment to citizenship, leadership, and service.',
+      },
+      {
+        title: 'Corps Commanding Officer’s Coin',
+        org: '2381 (BCR) Irish Fusiliers Royal Canadian Army Cadet Corps',
+        date: 'Jun 2026',
+      },
+    ]],
+    ['leadership', [
+      {
+        title: 'Deputy Commander / Drill Sergeant Major',
+        org: '2381 (BCR) Irish Fusiliers Royal Canadian Army Cadet Corps · Richmond, BC',
+        date: 'Nov 2020 – Aug 2026',
+        text: 'Led events for 100+ cadets and represented the corps on the Lower Mainland Senior Cadet Council.',
+      },
+      {
+        title: 'Staff Cadet, Expedition',
+        org: 'Vernon Cadet Training Centre, Department of National Defence · Vernon, BC',
+        date: 'Jun 2025 – Aug 2025',
+        text: 'Led a 30-cadet platoon through expedition training.',
+      },
+    ]],
   ],
   gallery: null,
 };
@@ -93,7 +140,7 @@ const modularTunnel = {
       'Final Year Design Project groups, where capstone verification and validation options can be increased, increasing the quality of the final FYDP projects.',
     ],
   ],
-  tools: [],
+  tools: ['Ansys FEA', 'CNC Machining'],
   gallery: [
     { src: 'assets/modular-tunnel/render.jpg', thumb: 'assets/modular-tunnel/render-thumb.jpg', alt: 'CAD render of the closed-return tunnel on its carts',
       caption: 'CAD render of the closed-return tunnel on its three carts.' },
@@ -125,6 +172,7 @@ const spaceMouse = {
 const rocketry = {
   name: 'Waterloo Rocketry',
   model: 'rocket',
+  logo: 'assets/rocketry/logo.png',      // drawn on the rocket's upper body
   modelNote: 'Generic liquid-propellant rocket shown for illustration — not a Waterloo Rocketry design.',
   blurb: 'Conducting diameter trade study research for Waterloo Rocketry’s first two-stage rocket.',
   rows: [

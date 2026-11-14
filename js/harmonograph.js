@@ -151,6 +151,21 @@ export class Harmonograph {
     this.lines.forEach((l) => { l.obj.renderOrder = -1; this.group.add(l.obj); });
   }
 
+  /** recolour for the light or dark theme */
+  setTheme(dark) {
+    const lineCols = dark ? [0xa9b9d2, 0x5f97ff] : LINES.map((c) => c.color);
+    this.lines.forEach((l, i) => {
+      const c = new THREE.Color(lineCols[i]), a = l.geo.attributes.color;
+      for (let k = 0; k < l.cfg.n; k++) a.setXYZ(k, c.r, c.g, c.b);
+      a.needsUpdate = true;
+    });
+    const [white, sky, deep, ink] = dark ? [0x31476f, 0x1d3f86, 0x0c2a66, 0x9db6e0] : [0xffffff, 0xbcd6f3, 0x7fa6e0, 0x4a5d80];
+    for (const r of this.ribbons) {
+      const u = r.obj.material.uniforms;
+      u.uWhite.value.set(white); u.uSky.value.set(sky); u.uDeep.value.set(deep); u.uInk.value.set(ink);
+    }
+  }
+
   /** time in seconds; nx, ny are small phase nudges (pointer) */
   update(time, nx = 0, ny = 0) {
     // the figure drifts slowly, so traces and ribbons take turns: each is
