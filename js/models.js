@@ -303,7 +303,6 @@ function spacemouse(M) {
 
 // generic long liquid-propellant sounding rocket (illustrative, not a real design)
 function rocket(M, opts = {}) {
-  const label = opts.label || 'WATERLOO ROCKETRY';
   const g = new THREE.Group();
   const r = 0.3;
 
@@ -325,35 +324,15 @@ function rocket(M, opts = {}) {
   }
   revolve(g, [[r, -1.25], [0.2, -1.36], [0.001, -1.36]], M.chrome, M, 48);
 
-  // team name down the oxidiser tank, on two sides
-  const cv = document.createElement('canvas');
-  cv.width = 256; cv.height = 1024;
-  const c2 = cv.getContext('2d');
-  c2.translate(128, 512); c2.rotate(-Math.PI / 2);
-  c2.textAlign = 'center'; c2.textBaseline = 'middle'; c2.fillStyle = '#0b3fd1';
-  let px = 110;
-  do { px -= 4; c2.font = `800 ${px}px "Inter Tight", "Helvetica Neue", Arial, sans-serif`; } while (c2.measureText(label).width > 940);
-  c2.fillText(label, 0, 0);
-  const tex = new THREE.CanvasTexture(cv);
-  tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
-  const decalMat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false });
-  for (const turn of [0, Math.PI]) {
-    const decal = new THREE.CylinderGeometry(r + 0.004, r + 0.004, 1.2, 24, 1, true, turn - 0.5, 1.0);
-    decal.translate(0, 1.625, 0);
-    const mesh = new THREE.Mesh(decal, decalMat);
-    mesh.renderOrder = 1;
-    g.add(mesh);
-  }
-
-  // team logo on the payload bay, on the same two sides
+  // team logo on the oxidiser tank, on two opposite sides
   if (opts.logo) {
     const logoTex = new THREE.TextureLoader().load(opts.logo);
     logoTex.colorSpace = THREE.SRGBColorSpace; logoTex.anisotropy = 8;
     const logoMat = new THREE.MeshBasicMaterial({ map: logoTex, transparent: true, depthWrite: false });
-    const size = 0.42;                                   // square patch: arc length = height
+    const size = 0.6;                                    // square patch: arc length = height
     for (const turn of [0, Math.PI]) {
       const patch = new THREE.CylinderGeometry(r + 0.004, r + 0.004, size, 24, 1, true, turn - size / r / 2, size / r);
-      patch.translate(0, 2.575, 0);
+      patch.translate(0, 1.625, 0);
       const mesh = new THREE.Mesh(patch, logoMat);
       mesh.renderOrder = 1;
       g.add(mesh);
