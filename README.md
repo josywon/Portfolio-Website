@@ -1,7 +1,5 @@
 # josephwon.dev
 
-Personal portfolio of Joseph Won — a static site (plain HTML, CSS and JavaScript, no build step).
-
 ## Layout
 
 | Path | What it is |
