@@ -4,6 +4,7 @@ import { buildModel, loadGlb, createMaterials } from './models.js';
 import { Harmonograph } from './harmonograph.js';
 import { makeCloudTile, makeGrain, makeEnvCanvas } from './sky.js';
 import { Sound } from './audio.js';
+import { warm, leave, arrive } from './portal.js';
 
 const $ = (s) => document.querySelector(s);
 const sound = new Sound();
@@ -198,6 +199,11 @@ function fillDetail(i) {
       li.append(head);
       if (it.org) li.append(h('em', it.org));
       if (it.text) li.append(h('p', it.text));
+      if (it.photos && it.photos.length) {            // photos sit under the entry they belong to
+        const row = h('div', null, 'entry-shots');
+        row.append(...it.photos.map((img) => shot(img, it.title)));
+        li.append(row);
+      }
       return li;
     }));
     sec.append(h('h3', title), ul);
@@ -221,18 +227,7 @@ function fillDetail(i) {
 
   el.dGallerySection.hidden = !p.gallery;
   if (p.gallery) {
-    const cells = p.gallery.map((img) => {
-      const b = h('button', null, 'shot');
-      b.type = 'button';
-      const isVideo = img.type === 'video';
-      b.setAttribute('aria-label', `${isVideo ? 'Play video' : 'Enlarge image'}: ${img.alt || p.name}`);
-      const im = h('img');
-      im.src = img.thumb || img.src; im.alt = img.alt || ''; im.loading = 'lazy';
-      b.append(im);
-      if (isVideo) b.append(h('span', null, 'play'));
-      b.addEventListener('click', () => openLightbox(img));
-      return b;
-    });
+    const cells = p.gallery.map((img) => shot(img, p.name));
     while (cells.length < GALLERY_SLOTS) cells.push(h('div', 'image', 'ph'));
     el.dGallery.replaceChildren(...cells);
   }
@@ -258,6 +253,27 @@ $('#btn-mail').addEventListener('click', openContact);
 $('#contact').addEventListener('click', (e) => { if (e.target === $('#contact')) $('#contact').close(); });
 $('#contact').addEventListener('close', () => sound.back());
 
+// one gallery tile; videos play silently on a loop right in the tile
+function shot(img, label) {
+  const b = h('button', null, `shot${img.fit === 'contain' ? ' contain' : ''}`);
+  b.type = 'button';
+  const isVideo = img.type === 'video';
+  b.setAttribute('aria-label', `${isVideo ? 'Play video' : 'Enlarge image'}: ${img.alt || label}`);
+  if (isVideo && !reduceMotion) {
+    const v = h('video');
+    Object.assign(v, { src: img.src, poster: img.thumb || '', muted: true, loop: true, autoplay: true, playsInline: true, preload: 'auto' });
+    v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
+    b.append(v);
+  } else {
+    const im = h('img');
+    im.src = img.thumb || img.src; im.alt = img.alt || ''; im.loading = 'lazy';
+    b.append(im);
+    if (isVideo) b.append(h('span', null, 'play'));
+  }
+  b.addEventListener('click', () => openLightbox(img));
+  return b;
+}
+
 function openLightbox(img) {
   const isVideo = img.type === 'video';
   el.lightboxImg.hidden = isVideo;
@@ -270,6 +286,8 @@ function openLightbox(img) {
     el.lightboxImg.alt = img.alt || '';
   }
   el.lightboxCaption.textContent = img.caption || '';
+  $('#lightbox-pdf').hidden = !img.pdf;
+  if (img.pdf) $('#lightbox-pdf').href = img.pdf;
   el.lightboxCaption.hidden = !img.caption;
   el.lightbox.showModal();
   sound.click();
@@ -436,7 +454,7 @@ for (const ch of channels) {
 const themeBtn = $('#btn-theme');
 let dark = document.documentElement.dataset.theme === 'dark';
 
-function applyTheme() {
+function applyTheme(save = true) {
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
   themeBtn.setAttribute('aria-pressed', String(dark));
   themeBtn.setAttribute('aria-label', dark ? 'Light mode' : 'Dark mode');
@@ -445,9 +463,19 @@ function applyTheme() {
   M.edge.color.set(dark ? 0x9cc4ff : 0x0b2a6b);
   floorMat.color.set(dark ? 0x8fb4ee : 0x0b2a6b);
   harmo.setTheme(dark);
-  try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch { /* private mode */ }
+  // only remember a theme the visitor picked themselves
+  if (save) { try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch { /* private mode */ } }
 }
-if (dark) applyTheme();
+if (dark) applyTheme(false);
+// no choice made on this site yet → follow the device's light/dark setting, live
+const systemDark = matchMedia('(prefers-color-scheme: dark)');
+const chosen = () => { try { return localStorage.getItem('theme'); } catch { return null; } };
+systemDark.addEventListener('change', (e) => {
+  if (chosen()) return;
+  dark = e.matches;
+  applyTheme(false);
+});
+
 
 themeBtn.addEventListener('click', () => {
   dark = !dark;
@@ -459,6 +487,17 @@ themeBtn.addEventListener('click', () => {
   rootStyle.setProperty('--pr', `${Math.ceil(Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y)))}px`);
   if (!document.startViewTransition || reduceMotion) { applyTheme(); return; }
   document.startViewTransition(() => { applyTheme(); renderer.render(scene, camera); });
+});
+
+/* ── mode switch: the dot after the name goes to the simple page ── */
+const SIMPLE = ['minimal/', 'minimal/style.css', 'minimal/app.js'];
+const modeDot = $('#mode-dot');
+for (const t of ['pointerenter', 'focus', 'touchstart']) modeDot.addEventListener(t, () => warm(SIMPLE), { passive: true });
+setTimeout(() => warm(SIMPLE), 5000);              // and anyway once the page has settled
+modeDot.addEventListener('click', (e) => {
+  e.preventDefault();
+  sound.click();
+  leave(modeDot, modeDot.href);
 });
 
 /* ── launch animation ───────────────────────────────────── */
@@ -642,4 +681,5 @@ requestAnimationFrame((t) => {
   last = t / 1000;
   document.body.classList.add('ready');
   frame(t);
+  arrive(innerWidth / 2, innerHeight * 0.46);      // if we came through the portal, close it into the carousel
 });
