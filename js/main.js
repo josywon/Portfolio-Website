@@ -490,7 +490,7 @@ themeBtn.addEventListener('click', () => {
 });
 
 /* ── mode switch: the dot after the name goes to the simple page ── */
-const SIMPLE = ['minimal/', 'minimal/style.css', 'minimal/app.js'];
+const SIMPLE = ['./', 'css/simple.css', 'js/simple.js'];
 const modeDot = $('#mode-dot');
 for (const t of ['pointerenter', 'focus', 'touchstart']) modeDot.addEventListener(t, () => warm(SIMPLE), { passive: true });
 setTimeout(() => warm(SIMPLE), 5000);              // and anyway once the page has settled

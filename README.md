@@ -6,10 +6,14 @@ Personal portfolio of Joseph Won — a static site (plain HTML, CSS and JavaScri
 
 | Path | What it is |
 | --- | --- |
-| `index.html` | The page |
-| `css/style.css` | All styling, including dark mode |
+| `index.html` | Home page: the simple one-pager |
+| `full/index.html` | The full 3D site (the blue dot after the name switches between them) |
+| `css/simple.css`, `js/simple.js` | Styles and script for the home page |
+| `css/style.css` | Styling for the full site, including dark mode |
 | `js/projects.js` | **Content** — every carousel entry: text, table rows, tools, gallery |
-| `js/main.js` | Scene, carousel, project panel, theme and input handling |
+| `js/main.js` | Full site: scene, carousel, project panel, theme and input handling |
+| `js/portal.js` | The blue transition between the two versions |
+| `minimal/index.html` | Redirects old `/minimal/` links to the home page |
 | `js/models.js` | Procedural stand-in parts and the GLB loader |
 | `js/harmonograph.js` | The animated background |
 | `js/audio.js` | Sound effects and ambient hum (synthesised) |

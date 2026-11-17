@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <base href="../">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Joseph Won</title>
+  <meta name="description" content="Joseph Won — mechanical engineering student. Projects, CAD models and design work.">
+  <meta name="theme-color" content="#f2f4f7">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://josephwon.dev/full/">
+  <meta property="og:title" content="Joseph Won — Mechanical Engineer">
+  <meta property="og:description" content="Mechanical engineering student. Projects, CAD models and design work.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='%231a74ff'/%3E%3C/svg%3E">
+
+  <script>try { var t = localStorage.getItem('theme'); if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.dataset.theme = 'dark'; if (sessionStorage.getItem('portal')) { document.documentElement.classList.add('portal-in'); setTimeout(function () { document.documentElement.classList.remove('portal-in'); }, 6000); } } catch (e) {}</script>
+  <style>html.portal-in body::after { content: ""; position: fixed; inset: 0; z-index: 9999; pointer-events: none; background: #1a74ff; clip-path: circle(150vmax at var(--px, 50%) var(--py, 50%)); transition: clip-path .7s cubic-bezier(.6, 0, .2, 1); } html.portal-out body::after { clip-path: circle(0 at var(--px, 50%) var(--py, 50%)); }</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+  <script type="importmap">
+    { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+    } }
+  </script>
+</head>
+<body>
+
+  <!-- ───────── background: paper, sky panels, line work ───────── -->
+  <div id="bg" aria-hidden="true">
+    <div class="grid"></div>
+
+    <div class="blk blk-a" data-depth="6"></div>
+    <div class="blk blk-b" data-depth="10"></div>
+
+    <div class="sky sky-a" data-depth="14"><i class="clouds"></i></div>
+    <div class="sky sky-b" data-depth="22"><i class="clouds"></i></div>
+
+    <svg class="deco" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+      <g class="ln">
+        <path d="M520 118 H1500 V214"/>
+        <path d="M70 610 H250 V470"/>
+        <path d="M1210 742 H1570 V560"/>
+        <path d="M0 430 H96"/>
+        <path d="M930 96 V70 H1120"/>
+      </g>
+      <g class="globe">
+        <circle cx="1130" cy="400" r="330"/>
+        <ellipse cx="1130" cy="400" rx="150" ry="330"/>
+        <ellipse cx="1130" cy="400" rx="330" ry="120"/>
+        <path d="M800 400 H1460 M1130 70 V730"/>
+      </g>
+      <g class="bar">
+        <rect x="70" y="640" width="150" height="9"/>
+        <rect x="228" y="640" width="14" height="9"/>
+        <rect x="1380" y="150" width="86" height="6"/>
+      </g>
+    </svg>
+
+    <div class="grain"></div>
+  </div>
+
+  <!-- ───────── WebGL: harmonograph + CAD carousel ───────── -->
+  <canvas id="gl" tabindex="0" aria-label="Project carousel. Scroll or use the arrow keys to rotate, Enter to open."></canvas>
+
+  <!-- ───────── HUD overlay (non-interactive) ───────── -->
+  <div id="hud" aria-hidden="true">
+    <div class="reticle"></div>
+    <p class="hint"><span class="wheel"><i></i></span>scroll to spin<br>click to open</p>
+    <p class="detail-hint">drag to rotate</p>
+    <p class="model-note" id="model-note"></p>
+  </div>
+
+  <!-- ───────── identity ───────── -->
+  <header class="id">
+    <div class="bars" aria-hidden="true"><i></i><i></i></div>
+    <h1>joseph won<a class="mode-dot" id="mode-dot" href="./" aria-label="Switch to the simple version of this site" title="?">.</a></h1>
+    <p class="role">mechanical engineer</p>
+  </header>
+
+  <!-- ───────── top right: theme + volume ───────── -->
+  <div class="topright">
+    <button class="orb theme" id="btn-theme" aria-label="Dark mode" aria-pressed="false" title="Light / dark">
+      <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.2 8.2 0 1 0 10.2 10.2z"/></svg>
+    </button>
+    <div class="audio" id="audio">
+      <div class="row" id="row-music">
+        <button class="mute" id="mute-music" aria-label="Mute background music" aria-pressed="false" title="Mute music">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg>
+        </button>
+        <input type="range" id="vol-music" min="0" max="1" step="0.01" aria-label="Background music volume">
+      </div>
+      <div class="row" id="row-sfx">
+        <button class="mute" id="mute-sfx" aria-label="Mute sound effects" aria-pressed="false" title="Mute sound effects">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.8 7.8 0 0 1 0 11"/></svg>
+        </button>
+        <input type="range" id="vol-sfx" min="0" max="1" step="0.01" aria-label="Sound effects volume">
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────── carousel controls ───────── -->
+  <button class="arrow arrow-prev" id="btn-prev" aria-label="Previous">
+    <svg viewBox="0 0 44 56"><path d="M32 8 L10 28 L32 48 Z"/></svg>
+  </button>
+  <button class="arrow arrow-next" id="btn-next" aria-label="Next">
+    <svg viewBox="0 0 44 56"><path d="M12 8 L34 28 L12 48 Z"/></svg>
+  </button>
+  <button class="open-sr" id="btn-open">open</button>
+
+  <div class="prompt" id="prompt" role="status" aria-live="polite">
+    <strong id="p-name"></strong>
+    <span class="blurb" id="p-blurb"></span>
+    <span class="cta"><b>A</b> <span id="p-cta">click to open</span></span>
+  </div>
+
+  <!-- ───────── dock ───────── -->
+  <footer class="dock">
+    <svg class="dock-bg" id="dock-bg" aria-hidden="true">
+      <defs>
+        <linearGradient id="dockFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffffff"/>
+          <stop offset="0.55" stop-color="#e9eef3"/>
+          <stop offset="1" stop-color="#d5dde6"/>
+        </linearGradient>
+      </defs>
+      <path class="dock-fill" id="dock-fill"/>
+      <path class="dock-edge" id="dock-edge"/>
+    </svg>
+    <nav class="dock-links" aria-label="Contact links">
+      <a class="orb" href="https://www.linkedin.com/in/josephwon119/" target="_blank" rel="noopener" aria-label="LinkedIn" title="LinkedIn">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="solid">
+          <circle cx="6.2" cy="6.4" r="1.9"/>
+          <rect x="4.6" y="10" width="3.2" height="9.4" rx=".6"/>
+          <path d="M10.4 10.6c0-.33.27-.6.6-.6h2c.33 0 .6.27.6.6v.75c.6-.95 1.7-1.6 3.1-1.6 2.5 0 3.7 1.6 3.7 4.3v4.75c0 .33-.27.6-.6.6h-2c-.33 0-.6-.27-.6-.6v-4.3c0-1.2-.5-1.9-1.5-1.9-1.1 0-1.9.8-1.9 2.2v4c0 .33-.27.6-.6.6h-2.2a.6.6 0 0 1-.6-.6z"/>
+        </svg>
+      </a>
+      <button class="orb" id="btn-mail" aria-label="Contact" title="Contact">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2.5"/><path d="M4 8l8 6 8-6"/></svg>
+      </button>
+      <a class="orb" href="https://github.com/josywon?tab=repositories" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" aria-hidden="true" class="solid">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+      </a>
+    </nav>
+    <p class="updated">Last updated: Nov 17, 2026</p>
+  </footer>
+
+  <!-- ───────── detail panel (projects + about me) ───────── -->
+  <aside class="panel" id="detail" aria-hidden="true" aria-labelledby="d-title" inert>
+    <div class="panel-scroll" id="d-scroll">
+      <h2 id="d-title"></h2>
+      <p class="lede" id="d-blurb"></p>
+      <dl class="meta" id="d-meta"></dl>
+      <section id="d-overview-section">
+        <h3 id="d-overview-title">overview</h3>
+        <div id="d-overview"></div>
+      </section>
+      <section id="d-tools-section">
+        <h3 id="d-tools-title">tools</h3>
+        <ul class="tools" id="d-tools"></ul>
+      </section>
+      <div id="d-extra"></div>
+      <section id="d-links-section">
+        <h3 id="d-links-title">links</h3>
+        <div class="links" id="d-links"></div>
+      </section>
+      <section id="d-gallery-section">
+        <h3>gallery</h3>
+        <div class="gallery" id="d-gallery"></div>
+      </section>
+    </div>
+    <div class="panel-actions">
+      <button class="pill" id="d-back"><span aria-hidden="true">◂</span> back</button>
+      <span class="grow"></span>
+      <button class="pill pill-sq" id="d-prev" aria-label="Previous">‹</button>
+      <button class="pill pill-sq" id="d-next" aria-label="Next">›</button>
+    </div>
+  </aside>
+
+  <!-- ───────── enlarged gallery image ───────── -->
+  <dialog class="lightbox" id="lightbox" aria-label="Enlarged image">
+    <figure>
+      <img id="lightbox-img" alt="">
+      <video id="lightbox-video" controls muted playsinline preload="metadata" hidden></video>
+      <figcaption id="lightbox-caption"></figcaption>
+      <a class="lb-pdf" id="lightbox-pdf" target="_blank" rel="noopener" hidden>Open the PDF ↗</a>
+    </figure>
+    <form method="dialog"><button class="pill" aria-label="Close image">close</button></form>
+  </dialog>
+
+  <!-- ───────── contact pop-up ───────── -->
+  <dialog class="lightbox contact" id="contact" aria-labelledby="contact-title">
+    <h2 id="contact-title">Contact</h2>
+    <dl class="contact-list" id="contact-list"></dl>
+    <form method="dialog"><button class="pill">close</button></form>
+  </dialog>
+
+  <p class="fallback" id="fallback">The 3D view could not start. Check your connection or try a browser with WebGL enabled.</p>
+
+  <script type="module" src="js/main.js"></script>
+  <script>
+    setTimeout(function () {
+      if (!document.body.classList.contains('ready')) document.body.classList.add('failed');
+    }, 8000);
+  </script>
+</body>
+</html>
