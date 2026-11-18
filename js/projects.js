@@ -40,7 +40,8 @@ const about = {
   name: 'About Me',
   model: 'avatar',
   sway: true,              // rock side to side so the face always shows
-  blurb: 'A mechanical engineering student passionate about aerospace and automotives :)',
+  blurb: 'A mechanical engineering student passionate about aerospace and automotives :) Also, click on the dot next to my name for a cool easter egg :)',
+  portrait: { src: 'assets/wind-tunnel/setup.jpg', alt: 'Joseph setting up a wind tunnel test in the dark' },   // home page only: fills the space under the About text
   rows: [
     ['based in', 'Vancouver, Canada'],
     ['studying', 'BASc Mechanical Engineering, Honours Co-op — University of Waterloo (2026 – 2031)'],

@@ -39,16 +39,23 @@ let current = -1;
 
 /* ── identity + tabs ────────────────────────────────────── */
 {
-  const seen = new Set();
-  for (const c of contact) {
-    const label = c.user ? 'Email' : c.label === 'linkedin' ? 'LinkedIn' : c.label === 'github' ? 'GitHub' : c.text;
-    if (seen.has(label)) continue;                // one email link is enough here
-    seen.add(label);
-    const a = h('a', label);
-    a.href = c.user ? `mailto:${c.user}@${c.domain}` : c.href;
-    if (!c.user) { a.target = '_blank'; a.rel = 'noopener'; }
-    $('#contact').append(a);
-  }
+  // Contact pop-up. The address is only assembled here, in the browser, so it never
+  // sits in the page source for scrapers; a copy button covers computers with no mail app.
+  const mail = contact.find((c) => c.user);
+  const address = mail ? `${mail.user}@${mail.domain}` : '';
+  $('#c-email').href = `mailto:${address}`;
+  $('#c-email-addr').textContent = address;
+  $('#c-linkedin').href = (contact.find((c) => c.label === 'linkedin') || {}).href || '#';
+  $('#c-github').href = (contact.find((c) => c.label === 'github') || {}).href || '#';
+  const dlg = $('#contact-dlg');
+  $('#contact-btn').addEventListener('click', () => dlg.showModal());
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+  $('#c-copy').addEventListener('click', async (e) => {
+    const b = e.currentTarget;
+    try { await navigator.clipboard.writeText(address); b.textContent = 'Copied ✓'; }
+    catch { b.textContent = address; }
+    setTimeout(() => { b.textContent = 'Copy email address'; }, 2000);
+  });
 
   const tabs = $('#tabs');
   tabs.setAttribute('role', 'tablist');
@@ -105,7 +112,16 @@ function renderText(p) {
 
   if (p.tools && p.tools.length) kids.push(h('p', p.tools.join(' · '), 'tools'));
 
+  if (p.portrait) {
+    const fig = h('figure', null, 'portrait');
+    const img = h('img');
+    img.src = asset(p.portrait.src); img.alt = p.portrait.alt || ''; img.decoding = 'async';
+    fig.append(img);
+    kids.push(fig);
+  }
+
   $('#text').replaceChildren(...kids);
+  $('#text').classList.toggle('has-portrait', !!p.portrait);
   $('#text').scrollTop = 0;
 }
 
@@ -422,7 +438,7 @@ function show(i, push = true) {
 // has room to scroll; the 3D view keeps the wheel for zoom.
 let wheelAcc = 0, wheelLock = false, wheelQuiet;
 addEventListener('wheel', (e) => {
-  if (lb.open || narrow.matches || e.target.closest('#stage')) return;
+  if (lb.open || $('#contact-dlg').open || narrow.matches || e.target.closest('#stage')) return;
   const pane = e.target.closest('.pane');
   if (pane && pane.scrollHeight > pane.clientHeight + 2) {
     const atTop = pane.scrollTop <= 0, atEnd = pane.scrollTop + pane.clientHeight >= pane.scrollHeight - 2;
@@ -440,7 +456,7 @@ addEventListener('wheel', (e) => {
 // horizontal swipe anywhere except the 3D view
 let touch = null;
 addEventListener('touchstart', (e) => {
-  if (e.touches.length !== 1 || e.target.closest('#stage') || lb.open) { touch = null; return; }
+  if (e.touches.length !== 1 || e.target.closest('#stage') || lb.open || $('#contact-dlg').open) { touch = null; return; }
   touch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
 }, { passive: true });
 addEventListener('touchend', (e) => {
@@ -452,6 +468,7 @@ addEventListener('touchend', (e) => {
 
 addEventListener('keydown', (e) => {
   if (e.target.closest('input, textarea')) return;
+  if ($('#contact-dlg').open) return;
   if (lb.open) {
     if (e.key === 'ArrowRight') openLightbox(lbIndex + 1);
     if (e.key === 'ArrowLeft') openLightbox(lbIndex - 1);
