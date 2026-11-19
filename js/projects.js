@@ -51,7 +51,7 @@ const about = {
   overview: [],
   toolsTitle: 'skills',
   toolGroups: [
-    ['CAD & simulation', ['SolidWorks', 'Fusion 360', 'AutoCAD', 'GD&T', 'Ansys FEA', 'Ansys CFD']],
+    ['CAD & simulation', ['SolidWorks', 'Fusion 360', 'AutoCAD', 'GD&T', 'Ansys FEA', 'Ansys CFD', 'OpenRocket']],
     ['Embedded systems & electronics', ['ESP32', 'Arduino', 'Arduino IDE', 'KiCad PCB design', 'Sensor integration', 'I2C']],
     ['Prototyping & fabrication', ['Hardware integration', 'CNC machining', '3D printing', 'Laser cutting', 'Metalworking', 'Woodworking']],
     ['Programming & tools', ['Python', 'Raspberry Pi', 'Git', 'GitHub', 'Microsoft Office', 'Google Workspace']],
@@ -199,7 +199,7 @@ const rocketry = {
   model: 'rocket',
   logo: 'assets/rocketry/logo.png',      // drawn on the rocket's upper body
   modelNote: 'Generic liquid-propellant rocket shown for illustration — not a Waterloo Rocketry design.',
-  blurb: 'Diameter trade study for Waterloo Rocketry’s first two-stage rocket.',
+  blurb: 'Conducting a diameter trade study for Waterloo Rocketry’s first two-stage rocket using Python and OpenRocket.',
   rows: [
     ['date', 'Sept 2026 – Present'],
     ['role', 'Propulsion Designer, Manufacturer'],
@@ -210,8 +210,12 @@ const rocketry = {
     'Support static fires and tank assembly under chemical-safety and sanitation rules.',
     'Made the best soft jaws the team has ever seen :)',
   ],
-  tools: [],
+  tools: ['Python', 'OpenRocket', 'Lathe', 'Mill'],
   gallery: [
+    { src: 'assets/rocketry/test-stand.jpg', thumb: 'assets/rocketry/test-stand-thumb.jpg', alt: 'Run tank and engine plumbed on the static-fire test stand',
+      caption: 'Run tank and engine plumbed on the static-fire test stand.' },
+    { src: 'assets/rocketry/static-fire-site.jpg', thumb: 'assets/rocketry/static-fire-site-thumb.jpg', alt: 'The team setting up at the static-fire test site',
+      caption: 'Static-fire day: the team setting up at the test site.' },
     { src: 'assets/rocketry/mill.jpg', thumb: 'assets/rocketry/mill-thumb.jpg', alt: 'Drilling an aluminium block on a mill in the student machine shop',
       caption: 'Drilling an aluminium block on the mill in the Engineering Student Shop.' },
     { src: 'assets/rocketry/soft-jaws.jpg', thumb: 'assets/rocketry/soft-jaws-thumb.jpg', alt: 'Custom aluminium soft jaws mounted in a bench vise',

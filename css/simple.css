@@ -109,7 +109,7 @@ a { color: inherit; }
 .text { overflow-y: auto; padding: 20px var(--pad) 18px; scrollbar-width: thin; scrollbar-color: #d6dae0 transparent; }
 .text h2 { font-size: clamp(21px, 1.8vw, 26px); font-weight: 700; letter-spacing: -.035em; line-height: 1.1; text-wrap: balance; }
 .text h2::after { content: "."; color: var(--blue); }
-.blurb { margin-top: 4px; font-size: 14px; color: var(--ink); max-width: 60ch; text-wrap: pretty; }
+.blurb { margin-top: 6px; font-size: 16.5px; line-height: 1.4; font-weight: 500; color: var(--ink); max-width: 60ch; text-wrap: pretty; }
 .facts { margin-top: 10px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; font-size: 12.5px; color: var(--ink); }
 .facts .sep { color: var(--ink-3); }
 .facts .status { color: var(--blue); }
@@ -277,7 +277,7 @@ a { color: inherit; }
   .role, .contact-btn { font-size: 14px; }
   .tabs button { font-size: 14.5px; }
   .text h2 { font-size: 32px; }
-  .blurb { font-size: 16.5px; }
+  .blurb { font-size: 19px; }
   .facts { font-size: 14px; }
   .points li { font-size: 15px; }
   .points ul li { font-size: 14px; }
@@ -297,7 +297,7 @@ a { color: inherit; }
   .role, .contact-btn { font-size: 16px; }
   .tabs button { font-size: 16.5px; }
   .text h2 { font-size: 40px; }
-  .blurb { font-size: 19px; }
+  .blurb { font-size: 22px; }
   .facts { font-size: 16px; }
   .points li { font-size: 17.5px; }
   .points ul li { font-size: 16px; }
