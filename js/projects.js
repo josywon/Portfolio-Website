@@ -124,6 +124,10 @@ const windTunnel = {
   ],
   tools: ['Ansys CFD', 'Autodesk Fusion', 'Python', 'ESP32', 'Arduino IDE'],
   gallery: [
+    { src: 'assets/wind-tunnel/smoke.jpg', thumb: 'assets/wind-tunnel/smoke-thumb.jpg', alt: 'Smoke flowing over a model car in the lit test section',
+      caption: 'Smoke flowing over a model car in the test section.' },
+    { type: 'video', src: 'assets/wind-tunnel/smoke-test.mp4', thumb: 'assets/wind-tunnel/smoke-test-thumb.jpg', alt: 'Smoke test over a model car',
+      caption: 'Smoke test over a model car.' },
     { src: 'assets/wind-tunnel/tunnel.jpg', thumb: 'assets/wind-tunnel/tunnel-thumb.jpg', alt: 'The assembled wind tunnel on a bench',
       caption: 'The assembled tunnel: honeycomb inlet, contraction cone, lit test section and fan outlet.' },
     { src: 'assets/wind-tunnel/test.jpg', thumb: 'assets/wind-tunnel/test-thumb.jpg', alt: 'A model car in the lit test section',
@@ -183,6 +187,10 @@ const spaceMouse = {
   ],
   tools: ['Autodesk Fusion', 'GD&T', 'PCB design', 'ESP32-S3', '3D printing', 'CNC', 'Resin printing'],
   gallery: [
+    { src: 'assets/space-mouse/render.jpg', thumb: 'assets/space-mouse/render-thumb.jpg', alt: 'CAD render of the space mouse: knob on a translucent base',
+      caption: 'CAD render of the full assembly.' },
+    { src: 'assets/space-mouse/section.jpg', thumb: 'assets/space-mouse/section-thumb.jpg', alt: 'Section view through the space mouse',
+      caption: 'Section view through the knob, shaft, sensor PCB and base.' },
     { src: 'assets/space-mouse/cad.jpg', thumb: 'assets/space-mouse/cad-thumb.jpg', alt: 'CAD assembly of the space mouse: knob, sensor PCB and base',
       caption: 'CAD assembly: knob, magnetic-sensor PCB and base.' },
     { src: 'assets/space-mouse/pcb-front.png', thumb: 'assets/space-mouse/pcb-front-thumb.png', fit: 'contain', alt: 'Rendered front of the sensor PCB',
