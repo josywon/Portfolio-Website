@@ -255,7 +255,7 @@ $('#contact').addEventListener('close', () => sound.back());
 
 // one gallery tile; videos play silently on a loop right in the tile
 function shot(img, label) {
-  const b = h('button', null, `shot${img.fit === 'contain' ? ' contain' : ''}`);
+  const b = h('button', null, `shot${img.fit === 'contain' ? ' contain' : ''}${img.wide ? ' wide' : ''}`);
   b.type = 'button';
   const isVideo = img.type === 'video';
   b.setAttribute('aria-label', `${isVideo ? 'Play video' : 'Enlarge image'}: ${img.alt || label}`);

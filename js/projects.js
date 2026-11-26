@@ -21,6 +21,7 @@
 //              description shown under the enlarged image. Add type: 'video'
 //              for a video (src is the .mp4, thumb its cover frame).
 //              Add fit: 'contain' for labelled diagrams that must not be cropped,
+//              wide: true to give an item a full-width row of its own,
 //              and a pdf path to offer the original document.
 //              Use null to hide the gallery section.
 
@@ -67,6 +68,11 @@ const about = {
           { src: 'assets/about/presenting.jpg', thumb: 'assets/about/presenting-thumb.jpg', alt: 'Presenting a prototype to judges at the innovation challenge',
             caption: 'Presenting at the Brock Solutions Airport Innovation Challenge.' },
         ],
+      },
+      {
+        title: 'President’s Scholarship of Distinction',
+        org: 'University of Waterloo',
+        date: 'Aug 2026',
       },
       {
         title: 'Cadet Medal of Excellence',
@@ -124,10 +130,10 @@ const windTunnel = {
   ],
   tools: ['Ansys CFD', 'Autodesk Fusion', 'Python', 'ESP32', 'Arduino IDE'],
   gallery: [
+    { type: 'video', src: 'assets/wind-tunnel/smoke-test.mp4', thumb: 'assets/wind-tunnel/smoke-test-thumb.jpg', alt: 'Smoke test over a model car', wide: true,
+      caption: 'Smoke test over a model car.' },
     { src: 'assets/wind-tunnel/smoke.jpg', thumb: 'assets/wind-tunnel/smoke-thumb.jpg', alt: 'Smoke flowing over a model car in the lit test section',
       caption: 'Smoke flowing over a model car in the test section.' },
-    { type: 'video', src: 'assets/wind-tunnel/smoke-test.mp4', thumb: 'assets/wind-tunnel/smoke-test-thumb.jpg', alt: 'Smoke test over a model car',
-      caption: 'Smoke test over a model car.' },
     { src: 'assets/wind-tunnel/tunnel.jpg', thumb: 'assets/wind-tunnel/tunnel-thumb.jpg', alt: 'The assembled wind tunnel on a bench',
       caption: 'The assembled tunnel: honeycomb inlet, contraction cone, lit test section and fan outlet.' },
     { src: 'assets/wind-tunnel/test.jpg', thumb: 'assets/wind-tunnel/test-thumb.jpg', alt: 'A model car in the lit test section',
@@ -172,7 +178,9 @@ const modularTunnel = {
 
 const spaceMouse = {
   name: '6 Degree of Freedom Space Mouse',
-  model: 'spacemouse',     // stand-in until the real assembly is converted
+  glb: 'assets/models/space-mouse.glb',
+  model: 'spacemouse',     // procedural stand-in, used only if the model fails to load
+  tilt: [0.45, 0.55, 0],
   blurb: 'An industry-quality 3D mouse for CAD, designed and built from scratch.',
   rows: [
     ['date', 'Oct 2026 – Ongoing'],
@@ -191,14 +199,16 @@ const spaceMouse = {
       caption: 'CAD render of the full assembly.' },
     { src: 'assets/space-mouse/section.jpg', thumb: 'assets/space-mouse/section-thumb.jpg', alt: 'Section view through the space mouse',
       caption: 'Section view through the knob, shaft, sensor PCB and base.' },
-    { src: 'assets/space-mouse/cad.jpg', thumb: 'assets/space-mouse/cad-thumb.jpg', alt: 'CAD assembly of the space mouse: knob, sensor PCB and base',
-      caption: 'CAD assembly: knob, magnetic-sensor PCB and base.' },
     { src: 'assets/space-mouse/pcb-front.png', thumb: 'assets/space-mouse/pcb-front-thumb.png', fit: 'contain', alt: 'Rendered front of the sensor PCB',
       caption: 'Sensor PCB, front: three magnetic sensors, eight side LEDs and four buttons.' },
     { src: 'assets/space-mouse/pcb-back.png', thumb: 'assets/space-mouse/pcb-back-thumb.png', fit: 'contain', alt: 'Rendered back of the sensor PCB',
       caption: 'Sensor PCB, back: connector headers and the team’s names.' },
     { src: 'assets/space-mouse/pcb.jpg', thumb: 'assets/space-mouse/pcb-thumb.jpg', alt: 'PCB layout of the sensor board',
       caption: 'PCB layout for the sensor board.' },
+    { src: 'assets/space-mouse/pcb-bare.jpg', thumb: 'assets/space-mouse/pcb-bare-thumb.jpg', alt: 'The bare sensor PCB held in helping hands before soldering',
+      caption: 'Soldering process: the bare sensor PCB, ready for components.' },
+    { src: 'assets/space-mouse/soldering.jpg', thumb: 'assets/space-mouse/soldering-thumb.jpg', alt: 'Hand-soldering components onto the sensor PCB',
+      caption: 'Soldering process: hand-soldering components onto the sensor PCB.' },
   ],
 };
 
@@ -220,6 +230,8 @@ const rocketry = {
   ],
   tools: ['Python', 'OpenRocket', 'Lathe', 'Mill'],
   gallery: [
+    { src: 'assets/rocketry/trade-study.jpg', thumb: 'assets/rocketry/trade-study-thumb.jpg', fit: 'contain', alt: 'Plots of C-star efficiency and thrust versus time from the trade-study code',
+      caption: 'Trade-study code output: C* efficiency and thrust over an ~11.5 s simulated burn.' },
     { src: 'assets/rocketry/test-stand.jpg', thumb: 'assets/rocketry/test-stand-thumb.jpg', alt: 'Run tank and engine plumbed on the static-fire test stand',
       caption: 'Run tank and engine plumbed on the static-fire test stand.' },
     { src: 'assets/rocketry/static-fire-site.jpg', thumb: 'assets/rocketry/static-fire-site-thumb.jpg', alt: 'The team setting up at the static-fire test site',

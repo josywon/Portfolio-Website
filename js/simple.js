@@ -131,6 +131,7 @@ let gallery = [];          // what the lightbox steps through for the current ta
 function tile(g, i, label) {
   const fig = h('figure', null, 'tile');
   fig.dataset.ar = g.ar || 4 / 3;                 // replaced by the real shape once loaded
+  if (g.wide) fig.dataset.wide = '1';
   const btn = h('button', null, 'frame');
   btn.type = 'button';
   const video = g.type === 'video';
@@ -176,20 +177,28 @@ function layout(grid) {
   const H = narrow.matches ? W * 1.45 : grid.clientHeight;
   if (!W || !H) return;
   const ar = tiles.map((t) => +t.dataset.ar || 4 / 3);
+  const wide = tiles.map((t, i) => (t.dataset.wide ? i : -1)).filter((i) => i >= 0);
+  const rest = tiles.map((_, i) => i).filter((i) => !wide.includes(i));
   let best = null;
-  for (let k = 1; k <= tiles.length; k++) {
-    // split into k consecutive rows of roughly equal total width
-    const total = ar.reduce((a, b) => a + b, 0), rows = [];
+  for (let k = rest.length ? 1 : 0; k <= rest.length; k++) {
+    // split the ordinary items into k consecutive rows of roughly equal total width
+    const total = rest.reduce((a, i) => a + ar[i], 0), split = [];
     let row = [], acc = 0;
-    ar.forEach((a, i) => {
-      const left = tiles.length - i, need = k - rows.length - 1;
-      row.push(i); acc += a;
-      if (rows.length < k - 1 && (acc >= total / k || left - 1 === need)) { rows.push(row); row = []; acc = 0; }
+    rest.forEach((i, n) => {
+      const left = rest.length - n, need = k - split.length - 1;
+      row.push(i); acc += ar[i];
+      if (split.length < k - 1 && (acc >= total / k || left - 1 === need)) { split.push(row); row = []; acc = 0; }
     });
-    if (row.length) rows.push(row);
-    if (rows.length !== k) continue;
+    if (row.length) split.push(row);
+    if (split.length !== k) continue;
+    // each wide item is a row of its own, slotted in before the first row that comes after it
+    const rows = [...split];
+    for (const w of [...wide].reverse()) {
+      const at = rows.findIndex((r) => r[0] > w);
+      rows.splice(at < 0 ? rows.length : at, 0, [w]);
+    }
     const heights = rows.map((r) => (W - GAP * (r.length - 1)) / r.reduce((s, i) => s + ar[i], 0));
-    const tall = heights.reduce((a, b) => a + b, 0) + GAP * (k - 1);
+    const tall = heights.reduce((a, b) => a + b, 0) + GAP * (rows.length - 1);
     const s = Math.min(1, H / tall);
     const area = rows.reduce((sum, r, ri) => sum + r.reduce((x, i) => x + (heights[ri] * s) ** 2 * ar[i], 0), 0);
     if (!best || area > best.area) best = { rows, heights, s, tall, area };
